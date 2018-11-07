@@ -192,10 +192,10 @@ type Access interface {
 	GetRoles() ([]Role, error)
 
 	// CreateRole creates a role
-	CreateRole(role Role, ttl time.Duration) error
+	CreateRole(role Role) error
 
 	// UpsertRole creates or updates role
-	UpsertRole(role Role, ttl time.Duration) error
+	UpsertRole(role Role) error
 
 	// DeleteAllRoles deletes all roles
 	DeleteAllRoles() error

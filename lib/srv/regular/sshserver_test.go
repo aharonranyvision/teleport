@@ -33,7 +33,6 @@ import (
 
 	"github.com/gravitational/teleport"
 	"github.com/gravitational/teleport/lib/auth"
-	"github.com/gravitational/teleport/lib/backend"
 	"github.com/gravitational/teleport/lib/defaults"
 	"github.com/gravitational/teleport/lib/limiter"
 	"github.com/gravitational/teleport/lib/pam"
@@ -217,7 +216,7 @@ func (s *SrvSuite) TestAgentForwardPermission(c *C) {
 	roleOptions := role.GetOptions()
 	roleOptions.ForwardAgent = services.NewBool(false)
 	role.SetOptions(roleOptions)
-	err = s.server.Auth().UpsertRole(role, backend.Forever)
+	err = s.server.Auth().UpsertRole(role)
 	c.Assert(err, IsNil)
 
 	se, err := s.clt.NewSession()
@@ -243,7 +242,7 @@ func (s *SrvSuite) TestAgentForward(c *C) {
 	roleOptions := role.GetOptions()
 	roleOptions.ForwardAgent = services.NewBool(true)
 	role.SetOptions(roleOptions)
-	err = s.server.Auth().UpsertRole(role, backend.Forever)
+	err = s.server.Auth().UpsertRole(role)
 	c.Assert(err, IsNil)
 
 	se, err := s.clt.NewSession()
@@ -1097,7 +1096,7 @@ func (s *SrvSuite) newUpack(username string, allowedLogins []string, allowedLabe
 	role.SetRules(services.Allow, rules)
 	role.SetLogins(services.Allow, allowedLogins)
 	role.SetNodeLabels(services.Allow, allowedLabels)
-	err = auth.UpsertRole(role, backend.Forever)
+	err = auth.UpsertRole(role)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}

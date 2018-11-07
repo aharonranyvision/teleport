@@ -17,10 +17,11 @@ limitations under the License.
 package local
 
 import (
+	"context"
 	"testing"
 
 	"github.com/gravitational/teleport/lib/backend"
-	"github.com/gravitational/teleport/lib/backend/boltbk"
+	"github.com/gravitational/teleport/lib/backend/lite"
 	"github.com/gravitational/teleport/lib/services/suite"
 	"github.com/gravitational/teleport/lib/utils"
 
@@ -32,20 +33,18 @@ func TestServices(t *testing.T) { TestingT(t) }
 type ServicesSuite struct {
 	bk    backend.Backend
 	suite *suite.ServicesTestSuite
-	dir   string
 }
 
 var _ = Suite(&ServicesSuite{})
 
 func (s *ServicesSuite) SetUpSuite(c *C) {
-	utils.InitLoggerForTests()
+	utils.InitLoggerForTests(testing.Verbose())
 }
 
 func (s *ServicesSuite) SetUpTest(c *C) {
 	var err error
 
-	s.dir = c.MkDir()
-	s.bk, err = boltbk.New(backend.Params{"path": s.dir})
+	s.bk, err = lite.New(context.TODO(), backend.Params{"path": c.MkDir()})
 	c.Assert(err, IsNil)
 
 	suite := &suite.ServicesTestSuite{}

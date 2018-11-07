@@ -31,7 +31,6 @@ import (
 	"golang.org/x/crypto/ssh"
 
 	"github.com/gravitational/teleport"
-	"github.com/gravitational/teleport/lib/backend"
 	"github.com/gravitational/teleport/lib/defaults"
 	"github.com/gravitational/teleport/lib/events"
 	"github.com/gravitational/teleport/lib/fixtures"
@@ -1223,7 +1222,7 @@ func (s *TLSSuite) TestGenerateCerts(c *check.C) {
 	roleOptions := userRole.GetOptions()
 	roleOptions.ForwardAgent = services.NewBool(true)
 	userRole.SetOptions(roleOptions)
-	err = s.server.Auth().UpsertRole(userRole, backend.Forever)
+	err = s.server.Auth().UpsertRole(userRole)
 	c.Assert(err, check.IsNil)
 
 	cert, err = adminClient.GenerateUserCert(pub, user1.GetName(), 1*time.Hour, teleport.CertificateFormatStandard)
@@ -1287,7 +1286,7 @@ func (s *TLSSuite) TestCertificateFormat(c *check.C) {
 		roleOptions := userRole.GetOptions()
 		roleOptions.CertificateFormat = tt.inRoleCertificateFormat
 		userRole.SetOptions(roleOptions)
-		err := s.server.Auth().UpsertRole(userRole, backend.Forever)
+		err := s.server.Auth().UpsertRole(userRole)
 		c.Assert(err, check.IsNil)
 
 		proxyClient, err := s.server.NewClient(TestBuiltin(teleport.RoleProxy))

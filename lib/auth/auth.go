@@ -543,7 +543,6 @@ func (s *AuthServer) U2FSignRequest(user string, password []byte) (*u2f.SignRequ
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
-
 	registration, err := s.GetU2FRegistration(user)
 	if err != nil {
 		return nil, trace.Wrap(err)
@@ -553,7 +552,6 @@ func (s *AuthServer) U2FSignRequest(user string, password []byte) (*u2f.SignRequ
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
-
 	err = s.UpsertU2FSignChallenge(user, challenge)
 	if err != nil {
 		return nil, trace.Wrap(err)

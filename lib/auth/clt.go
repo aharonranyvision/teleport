@@ -1850,12 +1850,12 @@ func (c *Client) GetRoles() ([]services.Role, error) {
 }
 
 // CreateRole creates a role.
-func (c *Client) CreateRole(role services.Role, ttl time.Duration) error {
+func (c *Client) CreateRole(role services.Role) error {
 	return trace.BadParameter("not implemented")
 }
 
 // UpsertRole creates or updates role
-func (c *Client) UpsertRole(role services.Role, ttl time.Duration) error {
+func (c *Client) UpsertRole(role services.Role) error {
 	data, err := services.GetRoleMarshaler().MarshalRole(role)
 	if err != nil {
 		return trace.Wrap(err)

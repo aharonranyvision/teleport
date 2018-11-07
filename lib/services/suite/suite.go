@@ -26,7 +26,6 @@ import (
 	"time"
 
 	"github.com/gravitational/teleport"
-	"github.com/gravitational/teleport/lib/backend"
 	"github.com/gravitational/teleport/lib/defaults"
 	"github.com/gravitational/teleport/lib/fixtures"
 	"github.com/gravitational/teleport/lib/services"
@@ -395,7 +394,7 @@ func (s *ServicesTestSuite) WebSessionCRUD(c *C) {
 	c.Assert(s.WebS.DeleteWebSession("user1", "sid1"), IsNil)
 
 	_, err = s.WebS.GetWebSession("user1", "sid1")
-	c.Assert(trace.IsNotFound(err), Equals, true, Commentf("%#v", err))
+	fixtures.ExpectNotFound(c, err)
 }
 
 func (s *ServicesTestSuite) TokenCRUD(c *C) {
@@ -417,7 +416,7 @@ func (s *ServicesTestSuite) TokenCRUD(c *C) {
 	c.Assert(s.ProvisioningS.DeleteToken("token"), IsNil)
 
 	_, err = s.ProvisioningS.GetToken("token")
-	c.Assert(trace.IsNotFound(err), Equals, true, Commentf("%#v", err))
+	fixtures.ExpectNotFound(c, err)
 }
 
 func (s *ServicesTestSuite) RolesCRUD(c *C) {
@@ -451,14 +450,14 @@ func (s *ServicesTestSuite) RolesCRUD(c *C) {
 			},
 		},
 	}
-	err = s.Access.UpsertRole(&role, backend.Forever)
+	err = s.Access.UpsertRole(&role)
 	c.Assert(err, IsNil)
 	rout, err := s.Access.GetRole(role.Metadata.Name)
 	c.Assert(err, IsNil)
 	fixtures.DeepCompare(c, rout, &role)
 
 	role.Spec.Allow.Logins = []string{"bob"}
-	err = s.Access.UpsertRole(&role, backend.Forever)
+	err = s.Access.UpsertRole(&role)
 	c.Assert(err, IsNil)
 	rout, err = s.Access.GetRole(role.Metadata.Name)
 	c.Assert(err, IsNil)
@@ -468,7 +467,7 @@ func (s *ServicesTestSuite) RolesCRUD(c *C) {
 	c.Assert(err, IsNil)
 
 	_, err = s.Access.GetRole(role.Metadata.Name)
-	c.Assert(trace.IsNotFound(err), Equals, true, Commentf("%T", err))
+	fixtures.ExpectNotFound(c, err)
 }
 
 func (s *ServicesTestSuite) NamespacesCRUD(c *C) {
@@ -494,7 +493,7 @@ func (s *ServicesTestSuite) NamespacesCRUD(c *C) {
 	c.Assert(err, IsNil)
 
 	_, err = s.PresenceS.GetNamespace(ns.Metadata.Name)
-	c.Assert(trace.IsNotFound(err), Equals, true, Commentf("%T", err))
+	fixtures.ExpectNotFound(c, err)
 }
 
 func (s *ServicesTestSuite) U2FCRUD(c *C) {

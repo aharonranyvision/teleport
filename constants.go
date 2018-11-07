@@ -78,6 +78,9 @@ const (
 	// ComponentAuth is the cluster CA node (auth server API)
 	ComponentAuth = "auth"
 
+	// ComponentMigrate is responsible for data migrations
+	ComponentMigrate = "migrate"
+
 	// ComponentNode is SSH node (SSH server serving requests)
 	ComponentNode = "node"
 

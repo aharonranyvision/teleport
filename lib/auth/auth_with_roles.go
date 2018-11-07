@@ -1020,19 +1020,19 @@ func (a *AuthWithRoles) GetRoles() ([]services.Role, error) {
 }
 
 // CreateRole creates a role.
-func (a *AuthWithRoles) CreateRole(role services.Role, ttl time.Duration) error {
+func (a *AuthWithRoles) CreateRole(role services.Role) error {
 	return trace.BadParameter("not implemented")
 }
 
 // UpsertRole creates or updates role
-func (a *AuthWithRoles) UpsertRole(role services.Role, ttl time.Duration) error {
+func (a *AuthWithRoles) UpsertRole(role services.Role) error {
 	if err := a.action(defaults.Namespace, services.KindRole, services.VerbCreate); err != nil {
 		return trace.Wrap(err)
 	}
 	if err := a.action(defaults.Namespace, services.KindRole, services.VerbUpdate); err != nil {
 		return trace.Wrap(err)
 	}
-	return a.authServer.UpsertRole(role, ttl)
+	return a.authServer.UpsertRole(role)
 }
 
 // GetRole returns role by name
