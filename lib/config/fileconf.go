@@ -833,7 +833,23 @@ type Authority struct {
 	SigningKeyFiles []string `yaml:"signing_key_files"`
 	// AllowedLogins is a list of allowed logins for users within
 	// this certificate authority
-	AllowedLogins []string `yaml:"allowed_logins"`
+	AllowedLogins []string     `yaml:"allowed_logins"`
+	TLSKeyPairs   []TLSKeyPair `yaml:"tls_key_pairs"`
+}
+
+type TLSKeyPair struct {
+	Cert string `yaml:"cert"`
+	Key  string `yaml:"key"`
+}
+
+func (s *Authority) parseTLSKeyPairs() (result []services.TLSKeyPair) {
+	for _, keyPair := range s.TLSKeyPairs {
+		result = append(result, services.TLSKeyPair{
+			Cert: []byte(keyPair.Cert),
+			Key:  []byte(keyPair.Key),
+		})
+	}
+	return result
 }
 
 // Parse reads values and returns parsed CertAuthority
@@ -869,6 +885,7 @@ func (a *Authority) Parse() (services.CertAuthority, services.Role, error) {
 	}
 
 	new, role := services.ConvertV1CertAuthority(ca)
+	new.SetTLSKeyPairs(a.parseTLSKeyPairs())
 	return new, role, nil
 }
 
