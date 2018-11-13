@@ -95,7 +95,7 @@ func NewTLSServer(cfg TLSServerConfig) (*TLSServer, error) {
 		AccessPoint:   cfg.AccessPoint,
 		AcceptedUsage: cfg.AcceptedUsage,
 	}
-	authMiddleware.Wrap(NewAPIServer(&cfg.APIConfig))
+	authMiddleware.Wrap(NewGRPCServer(cfg.APIConfig))
 	// Wrap sets the next middleware in chain to the authMiddleware
 	limiter.WrapHandle(authMiddleware)
 	// force client auth if given

@@ -31,6 +31,7 @@ import (
 	"golang.org/x/crypto/ssh"
 
 	"github.com/gravitational/teleport"
+	"github.com/gravitational/teleport/lib/auth/proto"
 	"github.com/gravitational/teleport/lib/defaults"
 	"github.com/gravitational/teleport/lib/events"
 	"github.com/gravitational/teleport/lib/fixtures"
@@ -1728,4 +1729,19 @@ func (s *TLSSuite) TestRegisterCAPath(c *check.C) {
 		CAPath:               caPath,
 	})
 	c.Assert(err, check.IsNil)
+}
+
+// TestHeartbeat tests heartbeat stream connection
+func (s *TLSSuite) TestHeartbeat(c *check.C) {
+	clt, err := s.server.NewClient(TestBuiltin(teleport.RoleNode))
+	c.Assert(err, check.IsNil)
+
+	streamClient, err := clt.GRPC()
+	c.Assert(err, check.IsNil)
+	stream, err := streamClient.ConnectHeartbeat(context.TODO())
+	c.Assert(err, check.IsNil)
+
+	err = stream.Send(&proto.Heartbeat{})
+	c.Assert(err, check.IsNil)
+
 }

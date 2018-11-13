@@ -29,9 +29,11 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/gravitational/teleport"
+	"github.com/gravitational/teleport/lib/auth/proto"
 	"github.com/gravitational/teleport/lib/defaults"
 	"github.com/gravitational/teleport/lib/events"
 	"github.com/gravitational/teleport/lib/httplib"
@@ -41,7 +43,10 @@ import (
 
 	"github.com/gravitational/roundtrip"
 	"github.com/gravitational/trace"
+	"github.com/gravitational/trace/trail"
 	"github.com/tstranex/u2f"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 )
 
 const (
@@ -61,10 +66,13 @@ type Dialer func(network, addr string) (net.Conn, error)
 // tunnel first, and then do HTTP-over-SSH. This client is wrapped by auth.TunClient
 // in lib/auth/tun.go
 type Client struct {
+	sync.Mutex
 	tlsConfig   *tls.Config
 	dialContext DialContext
 	roundtrip.Client
-	transport *http.Transport
+	transport  *http.Transport
+	conn       *grpc.ClientConn
+	grpcClient proto.AuthServiceClient
 }
 
 // TLSConfig returns TLS config used by the client, could return nil
@@ -231,6 +239,29 @@ func NewClient(addr string, dialer Dialer, params ...roundtrip.ClientParam) (*Cl
 	}, nil
 }
 
+// GRPC returns GRPC client
+func (c *Client) GRPC() (proto.AuthServiceClient, error) {
+	c.Lock()
+	defer c.Unlock()
+
+	if c.grpcClient != nil {
+		return c.grpcClient, nil
+	}
+	dialer := grpc.WithDialer(func(addr string, timeout time.Duration) (net.Conn, error) {
+		return c.dialContext(context.TODO(), "tcp", addr)
+	})
+	conn, err := grpc.DialContext(context.TODO(), teleport.APIDomain,
+		dialer,
+		grpc.WithTransportCredentials(credentials.NewTLS(c.tlsConfig)))
+	if err != nil {
+		return nil, trail.FromGRPC(err)
+	}
+	c.conn = conn
+	c.grpcClient = proto.NewAuthServiceClient(c.conn)
+
+	return c.grpcClient, nil
+}
+
 func (c *Client) GetTransport() *http.Transport {
 	return c.transport
 }
@@ -374,6 +405,13 @@ func (c *Client) GetClusterCACert() (*LocalCAResponse, error) {
 }
 
 func (c *Client) Close() error {
+	c.Lock()
+	defer c.Unlock()
+	if c.conn == nil {
+		err := c.conn.Close()
+		c.conn = nil
+		return err
+	}
 	return nil
 }
 
@@ -2290,6 +2328,9 @@ type ProvisioningService interface {
 
 // ClientI is a client to Auth service
 type ClientI interface {
+	// GRPC should return GPRC client
+	GPRC() (proto.AuthServiceClient, error)
+
 	IdentityService
 	ProvisioningService
 	services.Trust
